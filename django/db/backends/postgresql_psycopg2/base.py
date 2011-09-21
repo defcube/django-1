@@ -177,7 +177,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         If the normal operating mode is "autocommit", switch back to that when
         leaving transaction management.
         """
-        if self.features.uses_autocommit and not managed and self.isolation_level:
+        if self.features.uses_autocommit and self.isolation_level:
             self._set_isolation_level(0)
 
     def _set_isolation_level(self, level):
