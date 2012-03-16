@@ -421,16 +421,23 @@ class BaseDatabaseFeatures(object):
 
     def _supports_transactions(self):
         "Confirm support for transactions"
-        cursor = self.connection.cursor()
-        cursor.execute('CREATE TABLE ROLLBACK_TEST (X INT)')
-        self.connection._commit()
-        cursor.execute('INSERT INTO ROLLBACK_TEST (X) VALUES (8)')
-        self.connection._rollback()
-        cursor.execute('SELECT COUNT(X) FROM ROLLBACK_TEST')
-        count, = cursor.fetchone()
-        cursor.execute('DROP TABLE ROLLBACK_TEST')
-        self.connection._commit()
-        return count == 0
+        managed = self.connection.is_managed()
+        self.connection.enter_transaction_management()
+        self.connection.managed(True)
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute('CREATE TABLE ROLLBACK_TEST (X INT)')
+            self.connection.commit()
+            cursor.execute('INSERT INTO ROLLBACK_TEST (X) VALUES (8)')
+            self.connection.rollback()
+            cursor.execute('SELECT COUNT(X) FROM ROLLBACK_TEST')
+            count, = cursor.fetchone()
+            cursor.execute('DROP TABLE ROLLBACK_TEST')
+            self.connection.commit()
+            return count == 0
+        finally:
+            self.connection.managed(managed)
+            self.connection.leave_transaction_management()
 
     def _supports_stddev(self):
         "Confirm support for STDDEV and related stats functions"
