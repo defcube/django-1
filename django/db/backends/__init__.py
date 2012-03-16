@@ -108,12 +108,15 @@ class BaseDatabaseWrapper(object):
         over to the surrounding block, as a commit will commit all changes, even
         those from outside. (Commits are on connection level.)
         """
-        self._leave_transaction_management(self.is_managed())
         if self.transaction_state:
             del self.transaction_state[-1]
         else:
             raise TransactionManagementError("This code isn't under transaction "
                 "management")
+        # Note that it is intentional we pop first one entry from the
+        # transaction_state stack, and then use the topmost entry (given by
+        # is_managed()) for _leave_transaction_management(). Refs #16047.
+        self._leave_transaction_management(self.is_managed())
         if self._dirty:
             self.rollback()
             raise TransactionManagementError("Transaction managed block ended with "
