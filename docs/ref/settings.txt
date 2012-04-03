@@ -1711,7 +1711,7 @@ domain cookie. See the :doc:`/topics/http/sessions`.
 SESSION_COOKIE_HTTPONLY
 -----------------------
 
-Default: ``False``
+Default: ``True``
 
 Whether to use HTTPOnly flag on the session cookie. If this is set to
 ``True``, client-side JavaScript will not to be able to access the
@@ -1724,6 +1724,9 @@ useful way to mitigate the risk of client side script accessing the
 protected cookie data.
 
 .. _HTTPOnly: http://www.owasp.org/index.php/HTTPOnly
+
+.. versionchanged:: 1.4
+    The default value of the setting was changed from ``False`` to ``True``.
 
 .. setting:: SESSION_COOKIE_NAME
 
@@ -2131,8 +2134,10 @@ environment variable under the following conditions:
   :ref:`manually configuring settings
   <settings-without-django-settings-module>`, or
 
-* If you specify ``TIME_ZONE = None``. This will cause Django to fall
-  back to using the system time zone.
+* If you specify ``TIME_ZONE = None``. This will cause Django to fall back to
+  using the system timezone. However, this is discouraged when :setting:`USE_TZ
+  = True <USE_TZ>`, because it makes conversions between local time and UTC
+  less reliable.
 
 If Django doesn't set the ``TZ`` environment variable, it's up to you
 to ensure your processes are running in the correct environment.
