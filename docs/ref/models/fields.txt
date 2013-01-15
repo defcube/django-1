@@ -197,6 +197,14 @@ support tablespaces for indexes, this option is ignored.
 The default value for the field. This can be a value or a callable object. If
 callable it will be called every time a new object is created.
 
+The default cannot be a mutable object (model instance, list, set, etc.), as a
+reference to the same instance of that object would be used as the default
+value in all new model instances. Instead, wrap the desired default in a
+callable.  For example, if you had a custom ``JSONField`` and wanted to specify
+a dictionary as the default, use a ``lambda`` as follows::
+
+    contact_info = JSONField("ContactInfo", default=lambda:{"email": "to1@example.com"})
+
 ``editable``
 ------------
 
@@ -664,6 +672,11 @@ the field. Note: This method will close the file if it happens to be open when
 The optional ``save`` argument controls whether or not the instance is saved
 after the file has been deleted. Defaults to ``True``.
 
+Note that when a model is deleted, related files are not deleted. If you need
+to cleanup orphaned files, you'll need to handle it yourself (for instance,
+with a custom management command that can be run manually or scheduled to run
+periodically via e.g. cron).
+
 ``FilePathField``
 -----------------
 
@@ -959,6 +972,12 @@ need to use::
 This sort of reference can be useful when resolving circular import
 dependencies between two applications.
 
+A database index is automatically created on the ``ForeignKey``. You can
+disable this by setting :attr:`~Field.db_index` to ``False``.  You may want to
+avoid the overhead of an index if you are creating a foreign key for
+consistency rather than joins, or if you will be creating an alternative index
+like a partial or multiple column index.
+
 Database Representation
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1073,6 +1092,9 @@ A many-to-many relationship. Requires a positional argument: the class to which
 the model is related. This works exactly the same as it does for
 :class:`ForeignKey`, including all the options regarding :ref:`recursive
 <recursive-relationships>` and :ref:`lazy <lazy-relationships>` relationships.
+
+Related objects can be added, removed, or created with the field's
+:class:`~django.db.models.fields.related.RelatedManager`.
 
 Database Representation
 ~~~~~~~~~~~~~~~~~~~~~~~
