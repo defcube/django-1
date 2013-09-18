@@ -103,6 +103,8 @@ else:
                     M.set(key, real_value, coded_value)
                     dict.__setitem__(self, key, M)
                 except Cookie.CookieError:
+                    if not hasattr(self, 'bad_cookies'):
+                        self.bad_cookies = set()
                     self.bad_cookies.add(key)
                     dict.__setitem__(self, key, Cookie.Morsel())
 
